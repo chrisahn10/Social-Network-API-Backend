@@ -41,8 +41,8 @@ module.exports = {
 
             const UpdateThought = await Thought.findOneAndUpdate(
                 { _id: req.params.thoughtId, userId: req.body._id }, 
-                { new: true },
-                { $set: req.body }
+                { $set: req.body },
+                { new: true }
 
             );
             console.log(req)
@@ -51,32 +51,35 @@ module.exports = {
             }
             res.json(UpdateThought);
         } catch (err) {
-            console.log(err)
+            console.log(err + "updatethought error")
             res.status(500).json(err);
         }
     },
     async deleteThought(req, res) {
         try {
-            const DeleteThought = await Thought.findOneAndDelete(
-                { _id: req.params.thoughtId, userId: req.body._id });
-
-            if (!DeleteThought) {
-                res.status(404).json({ message: 'There is no Thought with that ID' });
+            const deleteThought = await Thought.findOneAndDelete(
+                { _id: req.params.thoughtId, userId: req.params.userId }
+            );
+    
+            if (!deleteThought) {
+                return res.status(404).json({ message: 'There is no Thought with that ID' });
             }
-
+    
             const findUser = await User.findOneAndUpdate(
                 { thoughts: req.params.thoughtId },
-                { new: true },
-                { $pull: { thoughts: req.params.thoughtId } }
+                { $pull: { thoughts: req.params.thoughtId } },
+                { new: true }
             );
-
+    
             if (!findUser) {
                 return res.status(404).json({
                     message: 'No User found for that Thought',
                 });
             }
-        res.json({ message: 'Thought has been deleted' });
+    
+            res.json({ message: 'Thought has been deleted' });
         } catch (err) {
+            console.log('Error in deleteThought:', err);
             res.status(500).json(err);
         }
     },
